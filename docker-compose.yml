@@ -1,0 +1,49 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: paulocastellano
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: laravel-testing
+    container_name: laravel-testing-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - laravel-testing
+
+  db:
+    image: mysql:5.7
+    container_name: laravel-testing-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: homestead
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_PASSWORD: secret
+      MYSQL_USER: homestead
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks:
+      - laravel-testing
+
+  nginx:
+    image: nginx:alpine
+    container_name: laravel-testing-nginx
+    restart: unless-stopped
+    ports:
+      - 8888:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - laravel-testing
+
+networks:
+  laravel-testing:
+    driver: bridge
